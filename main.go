@@ -15,7 +15,6 @@ func WordCount(s string) map[string]int {
 	for i := 0; i < len(ans); i++ {
 		mymap[ans(i)]++
 	}
-
 	return mymap
 }
 
