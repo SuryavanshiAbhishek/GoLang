@@ -13,7 +13,12 @@ Difference Between Concurrency and Parallelism:
 |---------------------|------------------------------------|------------------------------------|
 | Definition          | Managing multiple tasks concurrently, where tasks may not run simultaneously but appear to overlap in time. | Executing multiple tasks at the exact same time, making use of multiple processors or cores. |
 | Example             | Workers multitasking in a kitchen - each worker switches between tasks, but not all tasks happen at the exact same time. | Multiple workers in a kitchen, where each worker handles a different task simultaneously. |
-| Resource Usage      | Can be more efficient in terms of resource utilization, especially for I/O-bound tasks where one task can yield while waiting for I/O operations. | Requires multiple processing units (e.g., CPU cores) and is more efficient for CPU-bound tasks that can be truly parallelized. |
+| Resource Usage      | Can be more efficient in terms of resource utilization, especially for I/O-bound tasks where one task can yield while waiting for I/O operations. | Requires multiple processing units (e.g., CPU cores) an# Concurrency
+Concurrency in Go, in simple words, means that you can have different parts of your computer program working on different tasks at the same time, a bit like having multiple workers in a kitchen. Each worker (or "goroutine" in Go) can perform its job independently and doesn't have to wait for others to finish. This helps make programs in Go run efficiently and use your computer's resources effectively, just like a well-organized kitchen with multiple cooks getting things done simultaneously.
+
+![Alt text](image.png)
+
+### Key Pointsd is more efficient for CPU-bound tasks that can be truly parallelized. |
 | Typical Use Case   | Well-suited for handling many tasks that may involve waiting or interacting with external resources, like handling network requests or file operations. | Effective for computationally intensive tasks that can be divided into smaller, independent parts that can run concurrently without dependencies. |
 | Coordination       | May require synchronization mechanisms like mutexes or channels to coordinate and share data between concurrent tasks. | Parallel tasks often don't need as much coordination since they work independently on different data. |
 | Example Language   | Go (Goroutines), Python (Threading), Java (Threads) | Go (Goroutines with parallelism), C++ (std::thread), and other languages with parallel programming support. |
@@ -24,6 +29,71 @@ In summary, concurrency is about managing tasks effectively, allowing them to ov
 A Goroutine in Go is like a tiny, lightweight thread that helps your Go program do multiple things at once. It's a way to run functions concurrently, almost like having multiple workers in your program. These Goroutines can work independently and don't require a lot of memory, making your program efficient and capable of handling many tasks simultaneously without slowing down.
 
 * Go routine ki help se ham uss particular task ko alag thread pr daaldete hai and Jo hamara main thread hota hai uske khtm hone se phele hame jo alag thread pr dala hai task vo complete hona compulsory hai and also If we dont do this then after the execution of main thread alag we can use that thread or execute nahi kr payenge.
+
+#### Wait Groups
+In Go, the `sync.WaitGroup` is a useful synchronization primitive that allows you to wait for a collection of goroutines (concurrent functions) to finish their work before proceeding with the main program. It is particularly handy when you want to parallelize tasks and ensure they all complete before continuing or performing some final operation. 
+
+Here's how you can use a `sync.WaitGroup`:
+
+1. **Import the `sync` package:** First, make sure you import the `sync` package in your Go code.
+
+   ```go
+   import "sync"
+   ```
+
+2. **Create a `sync.WaitGroup` instance:** You create an instance of `sync.WaitGroup` and initialize it with the number of goroutines you want to wait for.
+
+   ```go
+   var wg sync.WaitGroup
+   ```
+
+3. **In each goroutine, use the WaitGroup:**
+   - Before starting the work in each goroutine, increment the WaitGroup counter using `Add`.
+
+   ```go
+   wg.Add(1)
+   ```
+
+   - When the goroutine completes its work, call `Done` to decrement the counter.
+
+   ```go
+   wg.Done()
+   ```
+
+   Here's an example that demonstrates the usage:
+
+   ```go
+   package main
+
+   import (
+       "fmt"
+       "sync"
+   )
+
+   func main() {
+       var wg sync.WaitGroup
+       numGoroutines := 5
+
+       for i := 0; i < numGoroutines; i++ {
+           wg.Add(1)
+
+           go func(i int) {
+               defer wg.Done() // Decrement the counter when the goroutine is done
+
+               fmt.Printf("Goroutine %d is working\n", i)
+           }(i)
+       }
+
+       // Wait for all goroutines to finish
+       wg.Wait()
+
+       fmt.Println("All goroutines have completed.")
+   }
+   ```
+
+In this example, we use `sync.WaitGroup` to ensure that all goroutines created in the loop complete their work before the "All goroutines have completed" message is printed. `wg.Wait()` blocks the main goroutine until all child goroutines have called `Done`.
+
+Using `sync.WaitGroup` can be very helpful in managing and coordinating concurrent tasks in Go, especially when you need to make sure that certain operations are completed before proceeding.
 
 ### Mutex
 A Mutex in Go, in simple terms, is like a key to a shared room. When multiple Goroutines (concurrent threads) want to access or change something that they could mess up if they all did it at once, they have to ask for the Mutex. Only one Goroutine with the Mutex key can enter the room at a time, ensuring that they take turns and don't interfere with each other, preventing conflicts and errors in your program.
